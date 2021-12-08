@@ -42,54 +42,174 @@
         <a-button class="method" @click="mal()" type="primary" shape="round" :size="size">Mal</a-button>
         <a-button class="method" @click="kananda()" type="primary" shape="round" :size="size">Kananda</a-button>
         <a-button class="method" @click="tamil()" type="primary" shape="round" :size="size">Tamil</a-button>
-        <div>
-          <a-textarea class="input" v-model:value="inputText" :rows="6" />
-          <a-textarea class="output" v-model:value="output" :rows="4" :disabled="true" />
+        <div :data="state">
+          <div class="input-block" v-if="uploadType === '0'">
+            <a-textarea class="input" v-model:value="inputText" :rows="6" />
+          </div>
+          <div class="upload-block" v-if="uploadType === '1'">
+            <div class="msgTitle">请上传以下格式的文档：</div>
+            <div class="msgContent">.xlsx、.txt.</div>
+            <div class="uploadBtn">
+              <!-- <a-form-model-item label="浏览您的计算机">
+                <a-upload :before-upload="beforeUpload" :remove="handleRemove" :multiple="false" :file-list="fileList">
+                  <a-button class="selectFileBtn">
+                    <a-icon type="upload" />浏览您的计算机
+                  </a-button>
+                </a-upload>
+              </a-form-model-item> -->
+              <a-upload v-model:file-list="fileList" name="file" :multiple="true"
+                action="http://192.168.235.48:8001/upload_txt" :headers="headers" @change="handleChange">
+                <a-button type="primary" class="selectFileBtn">
+                  <upload-outlined></upload-outlined>
+                  浏览您的计算机
+                </a-button>
+              </a-upload>
+            </div>
+          </div>
+          <div class="output-block" :rows="4" :data="tags">
+            <a-tag v-if="tag" prop="tag" color="purple">{{ tag }}</a-tag>
+          </div>
         </div>
       </div>
     </a-layout-content>
     <a-layout-footer class="footer">
-      <template class="welcome">
+      <div class="welcome">
         Welcome to
-      </template>
+      </div>
     </a-layout-footer>
   </a-layout>
 </template>
 
 <script>
   import { defineComponent, ref, onMounted, reactive, toRefs } from 'vue'
+  import { message } from 'ant-design-vue';
+import { UploadOutlined } from '@ant-design/icons-vue';
+  import axios from '../utils/axios'
 
   export default defineComponent({
     name: 'Index',
     components: {
-
-    },
-    data() {
-      return {
-
-      }
+      UploadOutlined
     },
     setup() {
       const state = reactive({
-        inputText: ''
+        inputText: '',
+        typeNum: '',
+        uploadType: '0'
       })
 
-      const output = ref('');
+      const tags = reactive({
+        tag: ''
+      });
 
-      const mal = (val) => {
-        console.log(state.inputText)
-      }
+      const fileList = ref([]);
+
+      // const output = ref('');
+
+      // const test = (val) => {
+      //   console.log(state.inputText)
+      // }
+
+      // let instance
 
       // onMounted(() => {
-      //   console.log(inputText)
-      //   // console.log(input.value)
+      //   instance.create()
       // })
+
+      const useText = (val) => {
+        if (state.uploadType) {
+          state.uploadType = '0';
+          // console.log('文字')
+        }
+      }
+
+      const useFile = (val) => {
+        if (state.uploadType) {
+          state.uploadType = '1';
+          // console.log('文档')
+        }
+      }
+
+      const mal = (val) => {
+        state.typeNum = '0';
+        if (state.inputText && state.uploadType === '0') {
+          getTags();
+        } else {
+          uploadFile();
+        }
+      }
+
+      const kananda = (val) => {
+        state.typeNum = '1';
+        if (state.inputText && state.uploadType === '0') {
+          getTags();
+        } else {
+          uploadFile();
+        }
+      }
+
+      const tamil = (val) => {
+        state.typeNum = '2';
+        if (state.inputText && state.uploadType === '0') {
+          getTags();
+        } else {
+          uploadFile();
+        }
+      }
+
+      const getTags = (val) => {
+        if (state.inputText) {
+          // console.log('text', state.inputText)
+          let params = new FormData();
+          // 测试用例
+          // params.append('text', 'Film nodidmele ee song ge addict aadavaru like maadinYalllrigu thanks for 1000 likes');
+          // params.append('type', '2');
+          params.append('text', state.inputText);
+          params.append('type', state.typeNum);
+          axios.post('/single', params).then((res) => {
+            console.log(res.data)
+            const Datas = res.data;
+            tags.tag = Datas;
+            // console.log('tags', tags.tag)
+            // ElMessage.success('修改成功')
+            if (state.typeNum === '0') {
+              console.log('Mal Success!')
+            } else if (state.typeNum === '1') {
+              console.log('Kananda Success!')
+            } else if (state.typeNum === '2') {
+              console.log('Tamil Success!')
+            }
+            // window.location.reload()
+          })
+        }
+      }
+
+      const handleChange = info => {
+        if (info.file.status !== 'uploading') {
+          console.log(info.file, info.fileList);
+        }
+
+        if (info.file.status === 'done') {
+          message.success(`${info.file.name} file uploaded successfully`);
+        } else if (info.file.status === 'error') {
+          message.error(`${info.file.name} file upload failed.`);
+        }
+      }
 
       return {
         size: ref('large'),
         ...toRefs(state),
-        output,
-        mal
+        ...toRefs(tags),
+        fileList,
+        useText,
+        useFile,
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+        handleChange,
+        mal,
+        kananda,
+        tamil
       }
     }
   })
@@ -153,7 +273,7 @@
     font-size: 16px;
     height: 35px;
     width: 87px;
-    z-index: 2;
+    z-index: 9999;
   }
 
   .ant-input[disabled] {
@@ -165,7 +285,7 @@
     text-align: right;
     margin-top: 6.67vh;
     margin-right: 17.5vw;
-    background: #F6F6F6;
+    color: #C4C4C4;
     font-size: 28px;
     font-weight: lighter;
     font-family: Bahnschrift;
@@ -262,23 +382,72 @@
     padding: 20px;
     margin-top: -16px;
     margin-left: -4px;
+    height: 215px !important;
   }
 
   .ant-input:hover {
     border-color: #791DCC !important;
+    z-index: 1000;
   }
 
   .ant-input::selection {
     background: #715DD2 !important;
   }
 
-  .output {
-    width: 315px !important;
+  .upload-block {
+    position: relative;
+    background-color: #fff;
+    width: 357px;
+    height: 215px;
+    margin-top: -16px;
+    margin-left: -4px;
     border-radius: 35px !important;
     padding: 20px;
-    z-index: 99;
+    border: 1px solid rgb(228, 228, 228);
+  }
+
+  .upload-block:hover {
+    border: 1px solid #791DCC;
+    opacity:1; 
+    z-index: 1000 !important;
+  }
+
+  .msgTitle {
+    margin-top: 14px;
+    margin-left: 7px;
+    color: rgba(8, 8, 8, 0.92);
+  }
+
+  .msgContent {
+    margin-left: 29px;
+    color: rgba(8, 8, 8, 0.92);
+  }
+
+  .selectFileInput {
+    display: none;
+  }
+
+  .selectFileBtn {
+    width: 148px;
+    height: 47px;
+    margin-top: 23px;
+    margin-left: 56px;
+  }
+
+  .output-block {
+    background-color: #fff;
+    width: 315px;
+    height: 144px;
+    border-radius: 35px !important;
+    padding: 20px;
+    /* z-index: 99; */
     position: absolute;
     top: 50.65vh;
-    left: 45.39vw;
+    left: 48.8vw;
+    border: 1px solid rgb(228, 228, 228);
+  }
+
+  .output-block:hover {
+    border: 1px solid #791DCC;
   }
 </style>
