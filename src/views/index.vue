@@ -38,8 +38,8 @@
     </a-layout-header>
     <a-layout-content class="content">
       <div class="block">
-        <a-button class="method" @click="autoDetection()" type="primary" shape="round" :size="size">自动检测</a-button>
-        <a-button class="method" @click="mal()" type="primary" shape="round" :size="size">Mal</a-button>
+        <!-- <a-button class="method" @click="autoDetection()" type="primary" shape="round" :size="size">自动检测</a-button> -->
+        <a-button class="method malBtn" @click="mal()" type="primary" shape="round" :size="size">Mal</a-button>
         <a-button class="method" @click="kananda()" type="primary" shape="round" :size="size">Kananda</a-button>
         <a-button class="method" @click="tamil()" type="primary" shape="round" :size="size">Tamil</a-button>
         <div :data="state">
@@ -47,8 +47,8 @@
             <a-textarea class="input" v-model:value="inputText" :rows="6" />
           </div>
           <div class="upload-block" v-if="uploadType === '1'">
-            <div class="msgTitle">请上传以下格式的文档：</div>
-            <div class="msgContent">.xlsx、.txt.</div>
+            <!-- <div class="msgTitle">请上传以下格式的文档：</div>
+            <div class="msgContent">.xlsx、.txt.</div> -->
             <div class="uploadBtn">
               <!-- <a-form-model-item label="浏览您的计算机">
                 <a-upload :before-upload="beforeUpload" :remove="handleRemove" :multiple="false" :file-list="fileList">
@@ -57,11 +57,18 @@
                   </a-button>
                 </a-upload>
               </a-form-model-item> -->
-              <a-upload v-model:file-list="fileList" name="file" :multiple="true"
-                action="http://192.168.235.48:8001/upload_txt" :headers="headers" @change="handleChange">
+              <a-upload v-model:file-list="txtFile" name="file" :multiple="true"
+                action="http://192.168.235.48:8001/upload_txt" :headers="headers" @change="txtChange">
                 <a-button type="primary" class="selectFileBtn">
                   <upload-outlined></upload-outlined>
-                  浏览您的计算机
+                  txt
+                </a-button>
+              </a-upload>
+              <a-upload v-model:file-list="excelFile" name="file" :multiple="true"
+                action="http://192.168.235.48:8001/upload_excel" :headers="headers" @change="excelChange">
+                <a-button type="primary" class="selectFileBtn">
+                  <upload-outlined></upload-outlined>
+                  Excel
                 </a-button>
               </a-upload>
             </div>
@@ -102,7 +109,9 @@ import { UploadOutlined } from '@ant-design/icons-vue';
         tag: ''
       });
 
-      const fileList = ref([]);
+      const txtFile = ref([]);
+
+      const excelFile = ref([]);
 
       // const output = ref('');
 
@@ -184,9 +193,21 @@ import { UploadOutlined } from '@ant-design/icons-vue';
         }
       }
 
-      const handleChange = info => {
+      const txtChange = info => {
         if (info.file.status !== 'uploading') {
-          console.log(info.file, info.fileList);
+          console.log(info.file, info.txtFile);
+        }
+
+        if (info.file.status === 'done') {
+          message.success(`${info.file.name} file uploaded successfully`);
+        } else if (info.file.status === 'error') {
+          message.error(`${info.file.name} file upload failed.`);
+        }
+      }
+
+      const excelChange = info => {
+        if (info.file.status !== 'uploading') {
+          console.log(info.file, info.excelChange);
         }
 
         if (info.file.status === 'done') {
@@ -200,13 +221,15 @@ import { UploadOutlined } from '@ant-design/icons-vue';
         size: ref('large'),
         ...toRefs(state),
         ...toRefs(tags),
-        fileList,
+        txtFile,
+        excelFile,
         useText,
         useFile,
         headers: {
           'Content-Type': 'multipart/form-data'
         },
-        handleChange,
+        txtChange,
+        excelChange,
         mal,
         kananda,
         tamil
@@ -274,6 +297,10 @@ import { UploadOutlined } from '@ant-design/icons-vue';
     height: 35px;
     width: 87px;
     z-index: 9999;
+  }
+
+  .malBtn {
+    margin-left: 45px;
   }
 
   .ant-input[disabled] {
@@ -430,7 +457,7 @@ import { UploadOutlined } from '@ant-design/icons-vue';
   .selectFileBtn {
     width: 148px;
     height: 47px;
-    margin-top: 23px;
+    margin-top: 16px;
     margin-left: 56px;
   }
 
