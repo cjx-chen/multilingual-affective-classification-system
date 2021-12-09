@@ -33,8 +33,8 @@
       </div>
     </div>
     <a-layout-header class="header">
-      <a-button class="text" @click="useText()" type="primary" shape="round" :size="size">文字</a-button>
-      <a-button class="file" @click="useFile()" type="primary" shape="round" :size="size">文档</a-button>
+      <a-button class="text" @click="useText" type="primary" shape="round" :size="size">文字</a-button>
+      <a-button class="file" @click="useFile" type="primary" shape="round" :size="size">文档</a-button>
     </a-layout-header>
     <a-layout-content class="content">
       <div class="block">
