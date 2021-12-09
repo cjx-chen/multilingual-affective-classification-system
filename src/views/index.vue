@@ -43,10 +43,10 @@
         <a-button class="method" @click="kananda" type="primary" shape="round" :size="size">Kananda</a-button>
         <a-button class="method" @click="tamil" type="primary" shape="round" :size="size">Tamil</a-button>
         <div :data="state">
-          <div class="input-block" v-if="uploadType === '0'">
-            <a-textarea class="input" v-model:value="inputText" :rows="6" />
+          <div class="input-block" v-if="state.uploadType === '0'">
+            <a-textarea class="input" v-model:value="state.inputText" :rows="6" />
           </div>
-          <div class="upload-block" v-if="uploadType === '1'">
+          <div class="upload-block" v-if="state.uploadType === '1'">
             <!-- <div class="msgTitle">请上传以下格式的文档：</div>
             <div class="msgContent">.xlsx、.txt.</div> -->
             <div class="uploadBtn">
@@ -74,7 +74,7 @@
             </div>
           </div>
           <div class="output-block" :rows="4" :data="tags">
-            <a-tag v-if="tag" prop="tag" color="purple">{{ tag }}</a-tag>
+            <a-tag v-if="tags.tag" prop="tags.tag" color="purple">{{ tags.tag }}</a-tag>
           </div>
         </div>
       </div>
@@ -363,8 +363,10 @@
 
       return {
         size: ref('large'),
-        ...toRefs(state),
-        ...toRefs(tags),
+        // ...toRefs(state),
+        // ...toRefs(tags),
+        state,
+        tags,
         loading,
         txtFile,
         excelFile,
