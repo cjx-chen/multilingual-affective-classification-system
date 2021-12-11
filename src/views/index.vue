@@ -37,11 +37,17 @@
       <a-button class="file" @click="useFile" type="primary" shape="round" :size="size">文档</a-button>
     </a-layout-header>
     <a-layout-content class="content">
-      <div class="block">
+      <div class="block" :data="state">
         <!-- <a-button class="method" @click="autoDetection()" type="primary" shape="round" :size="size">自动检测</a-button> -->
-        <a-button class="method malBtn" @click="mal" type="primary" shape="round" :size="size">Mal</a-button>
-        <a-button class="method" @click="kananda" type="primary" shape="round" :size="size">Kananda</a-button>
-        <a-button class="method" @click="tamil" type="primary" shape="round" :size="size">Tamil</a-button>
+        <a-button :loading="state.malLoading" class="method malBtn" @click="mal" type="primary" shape="round"
+          :size="size">Mal
+        </a-button>
+        <a-button :loading="state.kanandaLoading" class="method" @click="kananda" type="primary" shape="round"
+          :size="size">
+          Kananda</a-button>
+        <a-button :loading="state.tamilLoading" class="method" @click="tamil" type="primary" shape="round" :size="size">
+          Tamil
+        </a-button>
         <div :data="state">
           <div class="input-block" v-if="state.uploadType === '0'">
             <a-textarea class="input" v-model:value="state.inputText" :rows="6" />
@@ -72,7 +78,8 @@
           </div>
           <div class="output-block" :rows="4" :data="tags">
             <a-tag v-if="tags.tag" prop="tags.tag" color="purple">{{ tags.tag }}</a-tag>
-            <a class="file-address" v-if="tags.pos" prop="tags.pos" :href="'http://'+tags.pos" :download="'http://'+tags.pos" target="_blank">http://{{ tags.pos }}</a>
+            <a class="file-address" v-if="tags.pos" prop="tags.pos" :href="'http://'+tags.pos"
+              :download="'http://'+tags.pos" target="_blank">http://{{ tags.pos }}</a>
             <!-- <a class="file-address" v-if="tags.pos" prop="tags.pos" href="#" :download="'http://'+tags.pos" target="_blank">http://{{ tags.pos }}</a> -->
           </div>
         </div>
@@ -102,7 +109,10 @@
         inputText: '',
         typeNum: '',
         uploadType: '0',
-        fileType: ''
+        fileType: '',
+        malLoading: false,
+        kanandaLoading: false,
+        tamilLoading: false
       })
 
       const tags = reactive({
@@ -119,6 +129,9 @@
       const useText = (val) => {
         if (state.uploadType) {
           state.uploadType = '0';
+          state.malLoading = false;
+          state.kanandaLoading = false;
+          state.tamilLoading = false;
           tags.tag = '';
           tags.pos = '';
           // console.log('文字')
@@ -128,6 +141,9 @@
       const useFile = (val) => {
         if (state.uploadType) {
           state.uploadType = '1';
+          state.malLoading = false;
+          state.kanandaLoading = false;
+          state.tamilLoading = false;
           tags.tag = '';
           tags.pos = '';
           // console.log('文字')
@@ -164,6 +180,7 @@
         console.log('type', state.typeNum);
 
         if (!txtFile.value.length) {
+          message.warning('请先上传文件！');
           console.log('Please upload first');
           return;
         }
@@ -175,17 +192,27 @@
         loading.value = true;
 
         try {
+          if (state.typeNum === '0') {
+            state.malLoading = true;
+          } else if (state.typeNum === '1') {
+            state.kanandaLoading = true;
+          } else if (state.typeNum === '2') {
+            state.tamilLoading = true;
+          }
           axios.post('/upload_txt', params).then((res) => {
+            message.success('请求成功！');
             console.log(res)
             const Datas = res.data.pos;
             tags.pos = Datas;
             console.log('pos', tags.pos)
-            getFile()
             if (state.typeNum === '0') {
+              state.malLoading = false;
               console.log('Mal Success!')
             } else if (state.typeNum === '1') {
+              state.kanandaLoading = false;
               console.log('Kananda Success!')
             } else if (state.typeNum === '2') {
+              state.tamilLoading = false;
               console.log('Tamil Success!')
             }
           })
@@ -218,6 +245,7 @@
         console.log('type', state.typeNum);
 
         if (!excelFile.value.length) {
+          message.warning('请先上传文件！');
           console.log('Please upload first');
           return;
         }
@@ -229,17 +257,27 @@
         loading.value = true;
 
         try {
+          if (state.typeNum === '0') {
+            state.malLoading = true;
+          } else if (state.typeNum === '1') {
+            state.kanandaLoading = true;
+          } else if (state.typeNum === '2') {
+            state.tamilLoading = true;
+          }
           axios.post('/upload_excel', params).then((res) => {
+            message.success('请求成功！');
             console.log(res)
             const Datas = res.data.pos;
             tags.pos = Datas;
             // console.log('pos', tags.pos)
-            getFile()
             if (state.typeNum === '0') {
+              state.malLoading = false;
               console.log('Mal Success!')
             } else if (state.typeNum === '1') {
+              state.kanandaLoading = false;
               console.log('Kananda Success!')
             } else if (state.typeNum === '2') {
+              state.tamilLoading = false;
               console.log('Tamil Success!')
             }
           })
@@ -293,20 +331,37 @@
           // params.append('type', '2');
           params.append('text', state.inputText);
           params.append('type', state.typeNum);
-          axios.post('/single', params).then((res) => {
-            console.log(res.data)
-            const Datas = res.data;
-            tags.tag = Datas;
-            // console.log('tags', tags.tag)
-            // ElMessage.success('修改成功')
+
+          try {
             if (state.typeNum === '0') {
-              console.log('Mal Success!')
+              state.malLoading = true;
             } else if (state.typeNum === '1') {
-              console.log('Kananda Success!')
+              state.kanandaLoading = true;
             } else if (state.typeNum === '2') {
-              console.log('Tamil Success!')
+              state.tamilLoading = true;
             }
-          })
+            axios.post('/single', params).then((res) => {
+              console.log(res.data)
+              const Datas = res.data;
+              tags.tag = Datas;
+              // console.log('tags', tags.tag)
+              message.success('请求成功！');
+              if (state.typeNum === '0') {
+                state.malLoading = false;
+                console.log('Mal Success!')
+              } else if (state.typeNum === '1') {
+                state.kanandaLoading = false;
+                console.log('Kananda Success!')
+              } else if (state.typeNum === '2') {
+                state.tamilLoading = false;
+                console.log('Tamil Success!')
+              }
+            })
+          } catch (err) {
+            console.log(err);
+          } finally {
+
+          }
         }
       }
 
@@ -317,9 +372,9 @@
         }
 
         if (info.file.status === 'done') {
-          message.success(`${info.file.name} file uploaded successfully`);
+          message.success(`${info.file.name} 文件上传成功！`);
         } else if (info.file.status === 'error') {
-          message.error(`${info.file.name} file upload failed.`);
+          message.error(`${info.file.name} 文件上传失败！`);
         }
       }
 
@@ -329,9 +384,9 @@
         }
 
         if (info.file.status === 'done') {
-          message.success(`${info.file.name} file uploaded successfully`);
+          message.success(`${info.file.name} 文件上传成功！`);
         } else if (info.file.status === 'error') {
-          message.error(`${info.file.name} file upload failed.`);
+          message.error(`${info.file.name} 文件上传失败！`);
         }
       }
 

@@ -16,7 +16,7 @@ axios.defaults.headers.post["Content-Type"] = "multipart/form-data;charset=UTF-8
 // 请求拦截器，内部根据返回值，重新组装，统一管理。
 axios.interceptors.response.use(res => {
   if (typeof res !== 'object') {
-    // ElMessage.error('服务端异常！')
+    message.error('服务端异常！');
     console.log('服务端异常！');
     return Promise.reject(res)
   }
