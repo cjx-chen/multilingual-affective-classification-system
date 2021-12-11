@@ -119,6 +119,8 @@
       const useText = (val) => {
         if (state.uploadType) {
           state.uploadType = '0';
+          tags.tag = '';
+          tags.pos = '';
           // console.log('文字')
         }
       }
@@ -126,6 +128,8 @@
       const useFile = (val) => {
         if (state.uploadType) {
           state.uploadType = '1';
+          tags.tag = '';
+          tags.pos = '';
           // console.log('文字')
         }
       }
