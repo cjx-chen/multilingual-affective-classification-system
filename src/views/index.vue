@@ -50,23 +50,20 @@
             <!-- <div class="msgTitle">请上传以下格式的文档：</div>
             <div class="msgContent">.xlsx、.txt.</div> -->
             <div class="uploadBtn">
-              <!-- <a-form-model-item label="浏览您的计算机">
-                <a-upload :before-upload="beforeUpload" :remove="handleRemove" :multiple="false" :file-list="fileList">
-                  <a-button class="selectFileBtn">
-                    <a-icon type="upload" />浏览您的计算机
-                  </a-button>
-                </a-upload>
-              </a-form-model-item> -->
-              <a-upload v-model:file-list="txtFile" name="txt" accept=".txt" :multiple="true" :before-upload="beforeUploadTxt"
-                :headers="headers" :showUploadList="true" :withCredentials="true" :disabled="loading">
-                <a-button v-if="txtFile.length < 1 && excelFile.length < 1" type="primary" class="selectFileBtn" @click="useTxt">
+              <a-upload v-model:file-list="txtFile" name="txt" accept=".txt" :multiple="true"
+                :before-upload="beforeUploadTxt" :headers="headers" :showUploadList="true" :withCredentials="true"
+                :disabled="loading">
+                <a-button v-if="txtFile.length < 1 && excelFile.length < 1" type="primary" class="selectFileBtn"
+                  @click="useTxt">
                   <upload-outlined></upload-outlined>
                   txt
                 </a-button>
               </a-upload>
-              <a-upload v-model:file-list="excelFile" name="file" accept=".xls,.xlsx" :multiple="true" :before-upload="beforeUploadExcel"
-                 :headers="headers" :showUploadList="true" :withCredentials="true" :disabled="loading">
-                <a-button v-if="excelFile.length < 1 && txtFile.length < 1" type="primary" class="selectFileBtn" @click="useExcel">
+              <a-upload v-model:file-list="excelFile" name="file" accept=".xls,.xlsx" :multiple="true"
+                :before-upload="beforeUploadExcel" :headers="headers" :showUploadList="true" :withCredentials="true"
+                :disabled="loading">
+                <a-button v-if="excelFile.length < 1 && txtFile.length < 1" type="primary" class="selectFileBtn"
+                  @click="useExcel">
                   <upload-outlined></upload-outlined>
                   Excel
                 </a-button>
@@ -75,6 +72,8 @@
           </div>
           <div class="output-block" :rows="4" :data="tags">
             <a-tag v-if="tags.tag" prop="tags.tag" color="purple">{{ tags.tag }}</a-tag>
+            <a class="file-address" v-if="tags.pos" prop="tags.pos" :href="'http://'+tags.pos" :download="'http://'+tags.pos" target="_blank">http://{{ tags.pos }}</a>
+            <!-- <a class="file-address" v-if="tags.pos" prop="tags.pos" href="#" :download="'http://'+tags.pos" target="_blank">http://{{ tags.pos }}</a> -->
           </div>
         </div>
       </div>
@@ -107,7 +106,8 @@
       })
 
       const tags = reactive({
-        tag: ''
+        tag: '',
+        pos: ''
       });
 
       const txtFile = ref([]);
@@ -115,18 +115,6 @@
       const excelFile = ref([]);
 
       const loading = ref(false);
-
-      // const output = ref('');
-
-      // const test = (val) => {
-      //   console.log(state.inputText)
-      // }
-
-      // let instance
-
-      // onMounted(() => {
-      //   instance.create()
-      // })
 
       const useText = (val) => {
         if (state.uploadType) {
@@ -156,12 +144,12 @@
 
         // 获取图片地址
         const reader = new FileReader();
-          reader.readAsDataURL(file);
-          reader.onload = e => {
-            // console.log('e.target', e.target)
-            file.path = e.target.result;
-            console.log('url', file.path)
-            txtFile.value = [file];
+        reader.readAsDataURL(file);
+        reader.onload = e => {
+          // console.log('e.target', e.target)
+          file.path = e.target.result;
+          console.log('url', file.path)
+          txtFile.value = [file];
         };
         return false;
       }
@@ -185,9 +173,10 @@
         try {
           axios.post('/upload_txt', params).then((res) => {
             console.log(res)
-            const Datas = res.data;
-            tags.tag = Datas;
-            // console.log('tags', tags.tag)
+            const Datas = res.data.pos;
+            tags.pos = Datas;
+            console.log('pos', tags.pos)
+            getFile()
             if (state.typeNum === '0') {
               console.log('Mal Success!')
             } else if (state.typeNum === '1') {
@@ -209,12 +198,12 @@
 
         // 获取图片地址
         const reader = new FileReader();
-          reader.readAsDataURL(file);
-          reader.onload = e => {
-            // console.log('e.target', e.target)
-            file.path = e.target.result;
-            console.log('url', file.path)
-            excelFile.value = [file];
+        reader.readAsDataURL(file);
+        reader.onload = e => {
+          // console.log('e.target', e.target)
+          file.path = e.target.result;
+          console.log('url', file.path)
+          excelFile.value = [file];
         };
         return false;
       }
@@ -238,9 +227,10 @@
         try {
           axios.post('/upload_excel', params).then((res) => {
             console.log(res)
-            const Datas = res.data;
-            tags.tag = Datas;
-            // console.log('tags', tags.tag)
+            const Datas = res.data.pos;
+            tags.pos = Datas;
+            // console.log('pos', tags.pos)
+            getFile()
             if (state.typeNum === '0') {
               console.log('Mal Success!')
             } else if (state.typeNum === '1') {
@@ -261,7 +251,7 @@
         console.log('state.fileType', state.fileType)
         if (state.inputText && state.uploadType === '0') {
           getTags();
-        } else if (state.fileType === '1'){
+        } else if (state.fileType === '1') {
           handleUploadTxt();
         } else if (state.fileType === '2') {
           handleUploadExcel();
@@ -312,29 +302,9 @@
             } else if (state.typeNum === '2') {
               console.log('Tamil Success!')
             }
-            // window.location.reload()
           })
         }
       }
-
-      // const uploadFile = data => {
-      //   let params = new FormData();
-      //     console.log('data.file', data.file);
-      //     params.append('type', state.typeNum);
-      //     params.append('txt', data.file);
-      //     axios.post('/upload_txt', params).then((res) => {
-      //       console.log(res.data)
-      //       const Datas = res.data;
-      //       tags.tag = Datas;
-      //       if (state.typeNum === '0') {
-      //           console.log('Mal Success!')
-      //         } else if (state.typeNum === '1') {
-      //           console.log('Kananda Success!')
-      //         } else if (state.typeNum === '2') {
-      //           console.log('Tamil Success!')
-      //         }
-      //     })
-      // }
 
       const txtChange = info => {
         if (info.file.status !== 'uploading') {
@@ -578,8 +548,6 @@
   .upload-block {
     position: relative;
     background-color: #fff;
-    /* width: 357px;
-    height: 215px; */
     width: 27.92vw;
     height: 29.81vh;
     margin-top: -16px;
@@ -591,11 +559,11 @@
 
   .upload-block:hover {
     border: 1px solid #791DCC;
-    opacity:1; 
+    opacity: 1;
     z-index: 1000 !important;
   }
 
-  .msgTitle {
+  /* .msgTitle {
     margin-top: 14px;
     margin-left: 7px;
     color: rgba(8, 8, 8, 0.92);
@@ -604,7 +572,7 @@
   .msgContent {
     margin-left: 29px;
     color: rgba(8, 8, 8, 0.92);
-  }
+  } */
 
   .selectFileInput {
     display: none;
@@ -613,23 +581,19 @@
   .selectFileBtn {
     width: 148px;
     height: 47px;
-    margin-top: 6px;
-    margin-left: 56px;
+    /* margin-top: 12px; */
+    margin-top: 3vh;
+    /* margin-left: 56px; */
+    margin-left: 6vw;
   }
 
   .output-block {
     background-color: #fff;
-    /* width: 315px;
-    height: 144px; */
     width: 24.58vw;
     height: 20vh;
     border-radius: 35px !important;
     padding: 20px;
-    /* z-index: 99; */
     position: relative;
-    /* top: 50.65vh;
-    left: 48.91vw;
-    top: 35.09vh; */
     margin-top: -57px;
     margin-left: 22.14vw;
     border: 1px solid rgb(228, 228, 228);
@@ -637,5 +601,10 @@
 
   .output-block:hover {
     border: 1px solid #791DCC;
+  }
+
+  .file-address {
+    color: #791DCC;
+    word-wrap: break-word;
   }
 </style>
